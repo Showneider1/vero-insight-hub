@@ -305,7 +305,11 @@ export const updateCandidateCode = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertStaff(context);
     const db = await adminDb();
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      code_active?: boolean;
+      access_code?: string;
+      code_expires_at?: string | null;
+    } = {};
     if (data.codeActive !== undefined) patch.code_active = data.codeActive;
     if (data.accessCode) patch.access_code = data.accessCode.toUpperCase();
     if (data.expiresAt !== undefined) {
