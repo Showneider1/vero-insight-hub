@@ -86,7 +86,7 @@ export const saveSectionResponse = createServerFn({ method: "POST" })
       .object({
         code: z.string().trim().min(4).max(40),
         section: z.enum(["diagnostico", "analytics", "automacao", "ia", "roadmap"]),
-        response: z.record(z.unknown()),
+        response: z.record(z.any()),
       })
       .parse(data),
   )
@@ -100,7 +100,7 @@ export const saveSectionResponse = createServerFn({ method: "POST" })
         candidate_id: session.id,
         section: data.section,
         question_id: "data",
-        response: data.response,
+        response: data.response as never,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "candidate_id,section,question_id" },

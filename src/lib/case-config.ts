@@ -114,7 +114,8 @@ export const RECOMMENDATIONS = [
   "Não recomendado neste momento",
 ];
 
-export type SectionData = Record<string, unknown>;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type SectionData = Record<string, any>;
 
 const REQUIRED_FIELDS: Record<SectionKey, string[]> = {
   diagnostico: ["processos", "stakeholders", "dados", "priorizacao"],
