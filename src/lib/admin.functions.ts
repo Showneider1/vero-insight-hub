@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { weightedScore } from "./case-config";
+import { weightedScore, type SectionData } from "./case-config";
 import { adminDb, assertStaff, fetchBoard } from "./admin.server";
 
 export type { BoardCandidate } from "./admin.server";
@@ -48,8 +48,8 @@ export const getCandidateDetail = createServerFn({ method: "POST" })
 
     if (!candidate) throw new Error("Candidato não encontrado.");
 
-    const grouped: Record<string, Record<string, unknown>> = {};
-    for (const row of responses ?? []) grouped[row.section] = (row.response ?? {}) as Record<string, unknown>;
+    const grouped: Record<string, SectionData> = {};
+    for (const row of responses ?? []) grouped[row.section] = (row.response ?? {}) as SectionData;
 
     return {
       candidate: {
