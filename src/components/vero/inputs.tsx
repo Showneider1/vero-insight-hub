@@ -12,9 +12,9 @@ export function Field({
   className,
 }: {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   children: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <div className={cn("space-y-2", className)}>
