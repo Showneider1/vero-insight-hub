@@ -11,6 +11,7 @@
 DO $$
 DECLARE
   v_user_id uuid;
+  v_candidate_id uuid;
 BEGIN
   -- Tenta criar o usuario; se ja existir, apenas captura o id
   INSERT INTO auth.users (
@@ -76,4 +77,47 @@ BEGIN
   SELECT v_user_id, 'recruiter'
   WHERE v_user_id IS NOT NULL
   ON CONFLICT (user_id, role) DO NOTHING;
+
+  -- 5) Cria um candidato de exemplo para teste do fluxo completo
+  INSERT INTO public.candidates (id, name, email, position, access_code, code_active, code_expires_at, status, progress, started_at, submitted_at, created_at)
+  SELECT
+    gen_random_uuid(),
+    'Candidato Exemplo',
+    'candidato.exemplo@vero.test',
+    'Inteligencia e Inovacao de RH',
+    'VERO-2026-TEST',
+    true,
+    (now() + interval '30 days'),
+    'nao_iniciado',
+    0,
+    NULL,
+    NULL,
+    now()
+  ON CONFLICT (access_code) DO UPDATE
+    SET name = 'Candidato Exemplo',
+        email = 'candidato.exemplo@vero.test',
+        position = 'Inteligencia e Inovacao de RH',
+        code_active = true,
+        code_expires_at = (now() + interval '30 days'),
+        status = 'nao_iniciado',
+        progress = 0;
+
+  -- Captura o candidate_id criado (para possiveis extensoes futuras)
+  SELECT id INTO v_candidate_id
+  FROM public.candidates
+  WHERE access_code = 'VERO-2026-TEST'
+  LIMIT 1;
+
+  -- 6) Opcional: cria um assessment pendente para este candidato
+  INSERT INTO public.assessments (candidate_id, assessment_status, final_score_ai, final_score_hr, recommendation_ai, recommendation_hr)
+  SELECT v_candidate_id, 'pendente', NULL, NULL, NULL, NULL
+  WHERE v_candidate_id IS NOT NULL
+  ON CONFLICT (candidate_id) DO UPDATE
+    SET assessment_status = 'pendente';
+
 END $$;
+
+-- Instrucoes de uso:
+-- 1) Execute este script no SQL Editor do Supabase (ou via psql/CLI).
+-- 2) Login RH: admin@vero.test / Admin123!
+-- 3) Login Candidato: acesse / e use o codigo VERO-2026-TEST.
