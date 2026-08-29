@@ -1,23 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { CRITERIA, weightedScore } from "./case-config";
+import { weightedScore } from "./case-config";
+import { adminDb, assertStaff, fetchBoard } from "./admin.server";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-async function adminDb() {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin;
-}
-
-async function assertStaff(context: any) {
-  const { data } = await context.supabase.from("user_roles").select("role").eq("user_id", context.userId);
-  const roles = (data ?? []).map((r: any) => r.role);
-  if (!roles.includes("admin") && !roles.includes("recruiter")) {
-    throw new Error("Acesso restrito ao time de RH.");
-  }
-  return roles as string[];
-}
+export type { BoardCandidate } from "./admin.server";
 
 export const getStaffProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -30,48 +17,6 @@ export const getStaffProfile = createServerFn({ method: "GET" })
       .maybeSingle();
     return { roles, name: data?.name ?? null, email: data?.email ?? null, userId: context.userId as string };
   });
-
-async function fetchBoard() {
-  const db = await adminDb();
-  const [{ data: candidates }, { data: assessments }, { data: aiEvals }, { data: reviews }] = await Promise.all([
-    db.from("candidates").select("*").order("created_at", { ascending: true }),
-    db.from("assessments").select("*"),
-    db.from("ai_evaluations").select("*"),
-    db.from("hr_reviews").select("*"),
-  ]);
-
-  return (candidates ?? []).map((candidate) => {
-    const assessment = (assessments ?? []).find((a) => a.candidate_id === candidate.id) ?? null;
-    const ai = (aiEvals ?? []).find((a) => a.candidate_id === candidate.id) ?? null;
-    const review = (reviews ?? []).find((r) => r.candidate_id === candidate.id) ?? null;
-    return {
-      id: candidate.id,
-      name: candidate.name,
-      email: candidate.email,
-      accessCode: candidate.access_code,
-      position: candidate.position,
-      status: candidate.status,
-      progress: candidate.progress,
-      codeActive: candidate.code_active,
-      codeExpiresAt: candidate.code_expires_at,
-      startedAt: candidate.started_at,
-      submittedAt: candidate.submitted_at,
-      createdAt: candidate.created_at,
-      assessmentStatus: assessment?.assessment_status ?? "pendente",
-      scoreAi: ai?.final_score != null ? Number(ai.final_score) : null,
-      scoreHr: review?.final_score != null ? Number(review.final_score) : null,
-      recommendationAi: ai?.recommendation ?? null,
-      recommendationHr: review?.final_recommendation ?? null,
-      criteriaScoresAi: (ai?.criteria_scores ?? []) as any[],
-      criteriaScoresHr: (review?.criteria_scores ?? {}) as Record<string, number>,
-      strengthsAi: (ai?.strengths ?? []) as string[],
-      weaknessesAi: (ai?.weaknesses ?? []) as string[],
-      hasAi: Boolean(ai),
-    };
-  });
-}
-
-export type BoardCandidate = Awaited<ReturnType<typeof fetchBoard>>[number];
 
 export const listCandidatesBoard = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -103,8 +48,8 @@ export const getCandidateDetail = createServerFn({ method: "POST" })
 
     if (!candidate) throw new Error("Candidato não encontrado.");
 
-    const grouped: Record<string, any> = {};
-    for (const row of responses ?? []) grouped[row.section] = row.response ?? {};
+    const grouped: Record<string, Record<string, unknown>> = {};
+    for (const row of responses ?? []) grouped[row.section] = (row.response ?? {}) as Record<string, unknown>;
 
     return {
       candidate: {
@@ -121,7 +66,13 @@ export const getCandidateDetail = createServerFn({ method: "POST" })
       responses: grouped,
       ai: ai
         ? {
-            criteriaScores: (ai.criteria_scores ?? []) as any[],
+            criteriaScores: (ai.criteria_scores ?? []) as {
+              key: string;
+              score: number;
+              justification?: string;
+              strengths?: string;
+              attention?: string;
+            }[],
             strengths: (ai.strengths ?? []) as string[],
             weaknesses: (ai.weaknesses ?? []) as string[],
             interviewQuestions: (ai.interview_questions ?? []) as string[],
@@ -319,5 +270,3 @@ export const updateCandidateCode = createServerFn({ method: "POST" })
     if (error) throw new Error("Não foi possível atualizar o código.");
     return { ok: true };
   });
-
-export const CRITERIA_KEYS = CRITERIA.map((c) => c.key);
