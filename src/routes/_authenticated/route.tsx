@@ -1,24 +1,13 @@
 import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { getStaffProfile } from "@/lib/admin.functions";
+import { StaffProvider, type StaffProfile } from "@/lib/staff-context";
 
-export type StaffProfile = {
-  roles: string[];
-  name: string | null;
-  email: string | null;
-  userId: string;
-};
-
-const StaffContext = createContext<StaffProfile | null>(null);
-
-export function useStaffProfile() {
-  const ctx = useContext(StaffContext);
-  if (!ctx) throw new Error("useStaffProfile deve ser usado dentro da area autenticada.");
-  return ctx;
-}
+export type { StaffProfile } from "@/lib/staff-context";
+export { useStaffProfile } from "@/lib/staff-context";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -65,8 +54,8 @@ function AuthenticatedGate() {
   }
 
   return (
-    <StaffContext.Provider value={state.profile}>
+    <StaffProvider value={state.profile}>
       <Outlet />
-    </StaffContext.Provider>
+    </StaffProvider>
   );
 }
