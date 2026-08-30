@@ -42,7 +42,7 @@ function Dashboard() {
 
     const statusCounts = Object.keys(CANDIDATE_STATUS).map((key) => ({
       key,
-      label: CANDIDATE_STATUS[key].label,
+      label: CANDIDATE_STATUS[key]?.label ?? key,
       value: candidates.filter((c) => c.status === key).length,
     }));
 
