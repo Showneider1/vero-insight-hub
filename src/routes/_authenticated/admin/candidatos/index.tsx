@@ -149,7 +149,10 @@ function CandidatesPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Vaga</Label>
-                  <Select value={form.position} onValueChange={(value) => setForm((f) => ({ ...f, position: value }))}>
+                  <Select
+                    value={form.position ?? ""}
+                    onValueChange={(value) => setForm((f) => ({ ...f, position: value }))}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
