@@ -195,6 +195,8 @@ function LoginForm() {
 }
 
 function SignupForm() {
+  const navigate = useNavigate();
+  const getProfile = useServerFn(getStaffProfile);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -216,14 +218,24 @@ function SignupForm() {
     }
     setLoading(true);
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: { data: { name } },
       });
       if (signUpError) throw new Error(signUpError.message);
-      setDone(true);
       toast.success("Conta criada com sucesso.");
+      if (data.session) {
+        try {
+          await getProfile();
+          navigate({ to: "/admin" });
+          return;
+        } catch {
+          setDone(true);
+          return;
+        }
+      }
+      setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Nao foi possivel criar a conta.");
     } finally {
