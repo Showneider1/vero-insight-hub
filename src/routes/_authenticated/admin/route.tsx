@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Pill, VeroLogo } from "@/components/vero/brand";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { useStaffProfile } from "../route";
+import { useStaffProfile } from "@/lib/staff-context";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
