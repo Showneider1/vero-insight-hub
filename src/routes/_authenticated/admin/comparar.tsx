@@ -11,7 +11,7 @@ import { listCandidatesBoard } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/comparar")({
   validateSearch: (search: Record<string, unknown>) => ({
-    ids: typeof search.ids === "string" ? search.ids : "",
+    ids: typeof search["ids"] === "string" ? (search["ids"] as string) : "",
   }),
   head: () => ({
     meta: [{ title: "Comparar candidatos — Vero Talent Assessment" }, { name: "robots", content: "noindex" }],
