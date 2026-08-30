@@ -10,11 +10,29 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CaseRouteImport } from './routes/case'
+import { Route as EnviadoRouteImport } from './routes/enviado'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminCodigosRouteImport } from './routes/_authenticated/admin/codigos'
+import { Route as AuthenticatedAdminCompararRouteImport } from './routes/_authenticated/admin/comparar'
+import { Route as AuthenticatedAdminCandidatosIndexRouteImport } from './routes/_authenticated/admin/candidatos/index'
+import { Route as AuthenticatedAdminCandidatosCandidateIdRouteImport } from './routes/_authenticated/admin/candidatos/$candidateId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CaseRoute = CaseRouteImport.update({
@@ -22,31 +40,128 @@ const CaseRoute = CaseRouteImport.update({
   path: '/case',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnviadoRoute = EnviadoRouteImport.update({
+  id: '/enviado',
+  path: '/enviado',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminCodigosRoute =
+  AuthenticatedAdminCodigosRouteImport.update({
+    id: '/codigos',
+    path: '/codigos',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCompararRoute =
+  AuthenticatedAdminCompararRouteImport.update({
+    id: '/comparar',
+    path: '/comparar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCandidatosIndexRoute =
+  AuthenticatedAdminCandidatosIndexRouteImport.update({
+    id: '/candidatos/',
+    path: '/candidatos/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCandidatosCandidateIdRoute =
+  AuthenticatedAdminCandidatosCandidateIdRouteImport.update({
+    id: '/candidatos/$candidateId',
+    path: '/candidatos/$candidateId',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/case': typeof CaseRoute
+  '/enviado': typeof EnviadoRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/admin/codigos': typeof AuthenticatedAdminCodigosRoute
+  '/admin/comparar': typeof AuthenticatedAdminCompararRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/candidatos/$candidateId': typeof AuthenticatedAdminCandidatosCandidateIdRoute
+  '/admin/candidatos/': typeof AuthenticatedAdminCandidatosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/case': typeof CaseRoute
+  '/enviado': typeof EnviadoRoute
+  '/admin/codigos': typeof AuthenticatedAdminCodigosRoute
+  '/admin/comparar': typeof AuthenticatedAdminCompararRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/candidatos/$candidateId': typeof AuthenticatedAdminCandidatosCandidateIdRoute
+  '/admin/candidatos': typeof AuthenticatedAdminCandidatosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/case': typeof CaseRoute
+  '/enviado': typeof EnviadoRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/admin/codigos': typeof AuthenticatedAdminCodigosRoute
+  '/_authenticated/admin/comparar': typeof AuthenticatedAdminCompararRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/candidatos/$candidateId': typeof AuthenticatedAdminCandidatosCandidateIdRoute
+  '/_authenticated/admin/candidatos/': typeof AuthenticatedAdminCandidatosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/case'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/case'
+    | '/enviado'
+    | '/admin'
+    | '/admin/codigos'
+    | '/admin/comparar'
+    | '/admin/'
+    | '/admin/candidatos/$candidateId'
+    | '/admin/candidatos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/case'
-  id: '__root__' | '/' | '/case'
+  to:
+    | '/'
+    | '/auth'
+    | '/case'
+    | '/enviado'
+    | '/admin/codigos'
+    | '/admin/comparar'
+    | '/admin'
+    | '/admin/candidatos/$candidateId'
+    | '/admin/candidatos'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/case'
+    | '/enviado'
+    | '/_authenticated/admin'
+    | '/_authenticated/admin/codigos'
+    | '/_authenticated/admin/comparar'
+    | '/_authenticated/admin/'
+    | '/_authenticated/admin/candidatos/$candidateId'
+    | '/_authenticated/admin/candidatos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   CaseRoute: typeof CaseRoute
+  EnviadoRoute: typeof EnviadoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +173,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/case': {
       id: '/case'
       path: '/case'
@@ -65,12 +194,99 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaseRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/enviado': {
+      id: '/enviado'
+      path: '/enviado'
+      fullPath: '/enviado'
+      preLoaderRoute: typeof EnviadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/codigos': {
+      id: '/_authenticated/admin/codigos'
+      path: '/codigos'
+      fullPath: '/admin/codigos'
+      preLoaderRoute: typeof AuthenticatedAdminCodigosRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/comparar': {
+      id: '/_authenticated/admin/comparar'
+      path: '/comparar'
+      fullPath: '/admin/comparar'
+      preLoaderRoute: typeof AuthenticatedAdminCompararRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/candidatos/': {
+      id: '/_authenticated/admin/candidatos/'
+      path: '/candidatos'
+      fullPath: '/admin/candidatos/'
+      preLoaderRoute: typeof AuthenticatedAdminCandidatosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/candidatos/$candidateId': {
+      id: '/_authenticated/admin/candidatos/$candidateId'
+      path: '/candidatos/$candidateId'
+      fullPath: '/admin/candidatos/$candidateId'
+      preLoaderRoute: typeof AuthenticatedAdminCandidatosCandidateIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminCodigosRoute: typeof AuthenticatedAdminCodigosRoute
+  AuthenticatedAdminCompararRoute: typeof AuthenticatedAdminCompararRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminCandidatosCandidateIdRoute: typeof AuthenticatedAdminCandidatosCandidateIdRoute
+  AuthenticatedAdminCandidatosIndexRoute: typeof AuthenticatedAdminCandidatosIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminCodigosRoute: AuthenticatedAdminCodigosRoute,
+    AuthenticatedAdminCompararRoute: AuthenticatedAdminCompararRoute,
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+    AuthenticatedAdminCandidatosCandidateIdRoute:
+      AuthenticatedAdminCandidatosCandidateIdRoute,
+    AuthenticatedAdminCandidatosIndexRoute:
+      AuthenticatedAdminCandidatosIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   CaseRoute: CaseRoute,
+  EnviadoRoute: EnviadoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
