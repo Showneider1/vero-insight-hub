@@ -1,7 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Check, CheckCircle2, Loader2, LogOut, Send } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Layers,
+  ListChecks,
+  Loader2,
+  LogOut,
+  MessageSquareQuote,
+  Send,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -16,7 +28,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Pill, VeroLogo } from "@/components/vero/brand";
-import { BlockPicker, Field, LongText, Repeater } from "@/components/vero/inputs";
+import { BlockPicker, Field, LongText, Repeater, type RepeaterColumn } from "@/components/vero/inputs";
 import {
   ARCHITECTURE_BLOCKS,
   CASE_SCENARIO,
@@ -281,7 +293,18 @@ function CasePage() {
               allComplete={allComplete}
             />
           ) : (
-            <SectionPanel sectionKey={active} data={responses[active] ?? {}} update={update} />
+            <SectionPanel
+              key={active}
+              sectionKey={active}
+              data={responses[active] ?? {}}
+              update={update}
+              onCompleteSection={() => {
+                const index = SECTIONS.findIndex((s) => s.key === active);
+                const next = SECTIONS[index + 1];
+                setActive(next ? next.key : "revisao");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
           )}
         </main>
       </div>
@@ -322,7 +345,7 @@ function SelectField({
   onChange,
 }: {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   options: string[];
   value: string;
   onChange: (value: string) => void;

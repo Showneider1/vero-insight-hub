@@ -35,7 +35,7 @@ export function LongText({
   disabled,
 }: {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -75,7 +75,7 @@ export function Repeater({
   max,
 }: {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   columns: RepeaterColumn[];
   rows: Record<string, string>[];
   onChange: (rows: Record<string, string>[]) => void;
@@ -189,7 +189,7 @@ export function BlockPicker({
   disabled,
 }: {
   label: string;
-  hint?: string;
+  hint?: string | undefined;
   options: string[];
   value: string[];
   onChange: (value: string[]) => void;
