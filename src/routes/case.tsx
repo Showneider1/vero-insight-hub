@@ -345,188 +345,450 @@ function SelectField({
   );
 }
 
+type Step =
+  | {
+      kind: "text";
+      key: string;
+      label: string;
+      hint?: string;
+      from: string;
+      brief: string;
+      rows?: number;
+    }
+  | {
+      kind: "select";
+      key: string;
+      label: string;
+      hint?: string;
+      from: string;
+      brief: string;
+      options: string[];
+    }
+  | {
+      kind: "repeater";
+      key: string;
+      label: string;
+      hint?: string;
+      from: string;
+      brief: string;
+      columns: RepeaterColumn[];
+      max?: number;
+      addLabel?: string;
+    }
+  | {
+      kind: "blocks";
+      key: string;
+      label: string;
+      hint?: string;
+      from: string;
+      brief: string;
+      options: string[];
+    };
+
+const SECTION_STEPS: Record<SectionKey, Step[]> = {
+  diagnostico: [
+    {
+      kind: "text",
+      key: "processos",
+      label: "Principais processos a mapear",
+      hint: "Quais processos de RH você levantaria primeiro e por quê?",
+      from: "Diretora de Gente",
+      brief:
+        "“Tenho 90 dias para mostrar resultado ao board. Por onde você começa o mapeamento e por que essa ordem?”",
+    },
+    {
+      kind: "text",
+      key: "stakeholders",
+      label: "Stakeholders e entrevistas",
+      hint: "Quem você entrevistaria e quais perguntas faria.",
+      from: "Business Partner de RH",
+      brief: "“Cada área tem uma dor diferente. Com quem você fala primeiro e o que pergunta?”",
+    },
+    {
+      kind: "text",
+      key: "dados",
+      label: "Dados e sistemas",
+      hint: "Que dados e sistemas precisam ser avaliados para medir a maturidade atual.",
+      from: "Time de TI",
+      brief: "“Temos folha, ATS, planilhas e SharePoint. O que você quer olhar e em que ordem?”",
+    },
+    {
+      kind: "text",
+      key: "priorizacao",
+      label: "Critérios de priorização",
+      hint: "Como você priorizaria as oportunidades encontradas.",
+      from: "CFO",
+      brief: "“Não posso financiar tudo. Como você decide o que entra primeiro?”",
+    },
+  ],
+  analytics: [
+    {
+      kind: "repeater",
+      key: "indicadores",
+      label: "Indicadores do dashboard executivo",
+      hint: "Adicione de 4 a 8 indicadores, com fórmula, fonte, periodicidade e visualização.",
+      from: "CEO",
+      brief: "“Quero abrir um painel e entender a saúde de Gente em 30 segundos. Quais números aparecem?”",
+      columns: [
+        { key: "indicador", label: "Indicador", placeholder: "Turnover voluntário" },
+        { key: "formula", label: "Fórmula / cálculo", placeholder: "Desligamentos / headcount médio" },
+        { key: "fonte", label: "Fonte de dados", placeholder: "Sistema de folha" },
+        { key: "periodicidade", label: "Periodicidade", options: PERIODICITY_OPTIONS },
+        { key: "widget", label: "Visualização", options: WIDGET_OPTIONS },
+      ],
+    },
+    {
+      kind: "text",
+      key: "fontes",
+      label: "Fontes de dados e integrações",
+      hint: "Como os dados seriam consolidados e integrados.",
+      from: "Arquiteto de Dados",
+      brief: "“As bases não conversam. Como você consolidaria tudo sem criar mais planilhas?”",
+    },
+    {
+      kind: "text",
+      key: "governanca",
+      label: "Governança e qualidade de dados",
+      hint: "Responsabilidades, dicionário de dados, LGPD e confiabilidade.",
+      from: "Jurídico / DPO",
+      brief: "“Dado de pessoas é dado sensível. Quem responde pelo quê e como garantimos conformidade?”",
+    },
+    {
+      kind: "select",
+      key: "periodicidade",
+      label: "Periodicidade do ritual executivo",
+      hint: "Com que frequência o dashboard seria apresentado à diretoria.",
+      from: "Secretaria do Board",
+      brief: "“Preciso reservar a agenda. Qual é o ritmo desse ritual?”",
+      options: PERIODICITY_OPTIONS,
+    },
+  ],
+  automacao: [
+    {
+      kind: "repeater",
+      key: "automacoes",
+      label: "Três primeiras automações",
+      hint: "Máximo de 3 processos, com dor atual, tecnologia e ganho esperado.",
+      from: "Coordenadora de Operações de RH",
+      brief: "“Meu time vive apagando incêndio manual. Escolha 3 processos e me diga o ganho de cada um.”",
+      max: 3,
+      addLabel: "Adicionar automação",
+      columns: [
+        { key: "processo", label: "Processo", placeholder: "Admissão de novos colaboradores" },
+        { key: "dor", label: "Dor atual", placeholder: "Conferência manual de documentos" },
+        { key: "tecnologia", label: "Tecnologia", options: TECH_OPTIONS },
+        { key: "ganho", label: "Ganho principal", options: GAIN_OPTIONS },
+        { key: "impacto", label: "Impacto estimado", placeholder: "-40% no tempo de ciclo" },
+      ],
+    },
+    {
+      kind: "text",
+      key: "medicao",
+      label: "Como você mediria o resultado",
+      hint: "Indicadores de acompanhamento e forma de comprovar o ganho.",
+      from: "PMO",
+      brief: "“Automação sem medição é promessa. Como você comprova o resultado em números?”",
+    },
+  ],
+  ia: [
+    {
+      kind: "text",
+      key: "problema",
+      label: "Problema a ser resolvido",
+      hint: "Qual dor de RH a IA Generativa endereçaria.",
+      from: "Diretoria Executiva",
+      brief: "“Queremos IA, mas com propósito. Qual problema real ela resolve primeiro?”",
+    },
+    {
+      kind: "text",
+      key: "usuarios",
+      label: "Usuários e jornada",
+      hint: "Quem usaria a solução e em que momento.",
+      from: "Líder de Experiência do Colaborador",
+      brief: "“Quem abre essa ferramenta no dia a dia e em qual momento da jornada?”",
+    },
+    {
+      kind: "text",
+      key: "solucao",
+      label: "Solução proposta",
+      hint: "Funcionamento, fontes de conhecimento e integração com os sistemas atuais.",
+      from: "Time de Tecnologia",
+      brief: "“Explique o funcionamento como se eu fosse construir na semana que vem.”",
+    },
+    {
+      kind: "blocks",
+      key: "arquitetura",
+      label: "Arquitetura da solução",
+      hint: "Selecione os blocos na ordem do fluxo — o desenho é montado na sequência escolhida.",
+      from: "Arquiteto de Soluções",
+      brief: "“Monte o fluxo da solução, bloco por bloco, do usuário até a resposta.”",
+      options: ARCHITECTURE_BLOCKS,
+    },
+    {
+      kind: "text",
+      key: "riscos",
+      label: "Riscos",
+      hint: "Riscos técnicos, éticos e de LGPD.",
+      from: "Comitê de Riscos",
+      brief: "“O que pode dar errado? Seja honesto, isso conta a favor.”",
+    },
+    {
+      kind: "text",
+      key: "mitigacoes",
+      label: "Mitigações",
+      hint: "Controles, governança e supervisão humana.",
+      from: "Comitê de Riscos",
+      brief: "“Para cada risco citado, qual é o controle que dorme tranquilo?”",
+    },
+    {
+      kind: "text",
+      key: "indicadores",
+      label: "Indicadores de sucesso",
+      hint: "Como você comprovaria o valor gerado.",
+      from: "CFO",
+      brief: "“Em 6 meses, o que precisa ter mudado para o investimento se justificar?”",
+    },
+  ],
+  roadmap: [
+    {
+      kind: "text",
+      key: "d30",
+      label: "Onda 1 — primeiros 30 dias",
+      hint: "Entregas, foco e quick wins.",
+      from: "Diretora de Gente",
+      brief: "“Primeiro mês: o que eu já posso mostrar de concreto?”",
+    },
+    {
+      kind: "text",
+      key: "d60",
+      label: "Onda 2 — 60 dias",
+      hint: "Escala e consolidação.",
+      from: "Diretora de Gente",
+      brief: "“Segundo mês: onde ganhamos escala?”",
+    },
+    {
+      kind: "text",
+      key: "d90",
+      label: "Onda 3 — 90 dias",
+      hint: "Resultados esperados e próximos passos.",
+      from: "Board",
+      brief: "“No dia 90, o que apresentamos ao conselho?”",
+    },
+    {
+      kind: "text",
+      key: "comunicacao",
+      label: "Riscos do plano e como comunicá-lo à diretoria",
+      hint: "Transparência gera confiança: o que pode atrasar e como você comunica.",
+      from: "Board",
+      brief: "“E se algo atrasar? Como você nos conta isso?”",
+    },
+  ],
+};
+
+function depthOf(value: unknown): { level: 0 | 1 | 2 | 3; label: string; tone: string } {
+  let weight = 0;
+  if (typeof value === "string") weight = value.trim().split(/\s+/).filter(Boolean).length;
+  else if (Array.isArray(value)) weight = value.length * 25;
+
+  if (weight === 0) return { level: 0, label: "Aguardando resposta", tone: "bg-muted" };
+  if (weight < 30) return { level: 1, label: "Resposta inicial", tone: "bg-warning" };
+  if (weight < 80) return { level: 2, label: "Boa profundidade", tone: "bg-info" };
+  return { level: 3, label: "Resposta consistente", tone: "bg-success" };
+}
+
+function StepMeter({ value }: { value: unknown }) {
+  const depth = depthOf(value);
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex gap-1">
+        {[1, 2, 3].map((i) => (
+          <span
+            key={i}
+            className={cn("h-1.5 w-8 rounded-full transition-colors", i <= depth.level ? depth.tone : "bg-border")}
+          />
+        ))}
+      </div>
+      <span className="text-[11px] font-semibold text-muted-foreground">{depth.label}</span>
+    </div>
+  );
+}
+
 function SectionPanel({
   sectionKey,
   data,
   update,
+  onCompleteSection,
 }: {
   sectionKey: SectionKey;
   data: SectionData;
   update: (section: SectionKey, key: string, value: unknown) => void;
+  onCompleteSection: () => void;
 }) {
   const meta = SECTIONS.find((s) => s.key === sectionKey)!;
+  const steps = SECTION_STEPS[sectionKey];
+  const [stepIndex, setStepIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    setStepIndex(0);
+  }, [sectionKey]);
+
   const set = (key: string) => (value: unknown) => update(sectionKey, key, value);
   const text = (key: string) => (data[key] as string) ?? "";
   const rows = (key: string) => (data[key] as Record<string, string>[]) ?? [];
 
+  const renderStep = (step: Step) => {
+    if (step.kind === "text") {
+      return (
+        <LongText
+          label={step.label}
+          hint={step.hint}
+          value={text(step.key)}
+          onChange={set(step.key)}
+          rows={step.rows ?? 6}
+        />
+      );
+    }
+    if (step.kind === "select") {
+      return (
+        <SelectField
+          label={step.label}
+          hint={step.hint}
+          options={step.options}
+          value={text(step.key)}
+          onChange={set(step.key)}
+        />
+      );
+    }
+    if (step.kind === "repeater") {
+      return (
+        <Repeater
+          label={step.label}
+          hint={step.hint}
+          rows={rows(step.key)}
+          onChange={set(step.key)}
+          columns={step.columns}
+          {...(step.max !== undefined ? { max: step.max } : {})}
+          {...(step.addLabel !== undefined ? { addLabel: step.addLabel } : {})}
+        />
+      );
+    }
+    return (
+      <BlockPicker
+        label={step.label}
+        hint={step.hint}
+        options={step.options}
+        value={(data[step.key] as string[]) ?? []}
+        onChange={set(step.key)}
+      />
+    );
+  };
+
+  const current = steps[Math.min(stepIndex, steps.length - 1)]!;
+  const isLast = stepIndex >= steps.length - 1;
+
   return (
     <section className="surface-card space-y-6 p-5 sm:p-7">
-      <header className="space-y-2">
-        <Pill tone="info">{meta.label}</Pill>
+      <header className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Pill tone="info">{meta.label}</Pill>
+          <Button variant="ghost" size="sm" onClick={() => setExpanded((v) => !v)}>
+            {expanded ? (
+              <>
+                <ListChecks className="mr-1.5 size-4" /> Modo guiado
+              </>
+            ) : (
+              <>
+                <Layers className="mr-1.5 size-4" /> Ver etapa completa
+              </>
+            )}
+          </Button>
+        </div>
         <h1 className="font-display text-xl font-bold text-foreground">{meta.title}</h1>
         <p className="text-sm text-muted-foreground">{meta.intro}</p>
       </header>
 
-      {sectionKey === "diagnostico" ? (
-        <div className="space-y-6">
-          <LongText
-            label="Principais processos a mapear"
-            hint="Quais processos de RH você levantaria primeiro e por quê?"
-            value={text("processos")}
-            onChange={set("processos")}
-          />
-          <LongText
-            label="Stakeholders e entrevistas"
-            hint="Quem você entrevistaria e quais perguntas faria."
-            value={text("stakeholders")}
-            onChange={set("stakeholders")}
-          />
-          <LongText
-            label="Dados e sistemas"
-            hint="Que dados e sistemas precisam ser avaliados para medir a maturidade atual."
-            value={text("dados")}
-            onChange={set("dados")}
-          />
-          <LongText
-            label="Critérios de priorização"
-            hint="Como você priorizaria as oportunidades encontradas."
-            value={text("priorizacao")}
-            onChange={set("priorizacao")}
-          />
+      {expanded ? (
+        <div className="space-y-8">
+          {steps.map((step) => (
+            <div key={step.key} className="space-y-2">
+              {renderStep(step)}
+              <StepMeter value={data[step.key]} />
+            </div>
+          ))}
         </div>
-      ) : null}
+      ) : (
+        <div className="space-y-5">
+          <div className="flex items-center gap-1.5">
+            {steps.map((step, index) => {
+              const done = depthOf(data[step.key]).level > 0;
+              return (
+                <button
+                  key={step.key}
+                  type="button"
+                  aria-label={step.label}
+                  onClick={() => setStepIndex(index)}
+                  className={cn(
+                    "h-1.5 flex-1 rounded-full transition-all",
+                    index === stepIndex
+                      ? "bg-primary"
+                      : done
+                        ? "bg-success/70"
+                        : "bg-border hover:bg-muted-foreground/40",
+                  )}
+                />
+              );
+            })}
+          </div>
 
-      {sectionKey === "analytics" ? (
-        <div className="space-y-6">
-          <Repeater
-            label="Indicadores do dashboard executivo"
-            hint="Adicione de 4 a 8 indicadores, com fórmula, fonte, periodicidade e visualização."
-            rows={rows("indicadores")}
-            onChange={set("indicadores")}
-            columns={[
-              { key: "indicador", label: "Indicador", placeholder: "Turnover voluntário" },
-              { key: "formula", label: "Fórmula / cálculo", placeholder: "Desligamentos / headcount médio" },
-              { key: "fonte", label: "Fonte de dados", placeholder: "Sistema de folha" },
-              { key: "periodicidade", label: "Periodicidade", options: PERIODICITY_OPTIONS },
-              { key: "widget", label: "Visualização", options: WIDGET_OPTIONS },
-            ]}
-          />
-          <LongText
-            label="Fontes de dados e integrações"
-            hint="Como os dados seriam consolidados e integrados."
-            value={text("fontes")}
-            onChange={set("fontes")}
-          />
-          <LongText
-            label="Governança e qualidade de dados"
-            hint="Responsabilidades, dicionário de dados, LGPD e confiabilidade."
-            value={text("governanca")}
-            onChange={set("governanca")}
-          />
-          <SelectField
-            label="Periodicidade do ritual executivo"
-            hint="Com que frequência o dashboard seria apresentado à diretoria."
-            options={PERIODICITY_OPTIONS}
-            value={text("periodicidade")}
-            onChange={set("periodicidade")}
-          />
-        </div>
-      ) : null}
+          <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-accent/50 p-4">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+              <MessageSquareQuote className="size-4" />
+            </span>
+            <div className="space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">{current.from}</p>
+              <p className="text-sm font-medium leading-relaxed text-foreground">{current.brief}</p>
+            </div>
+          </div>
 
-      {sectionKey === "automacao" ? (
-        <div className="space-y-6">
-          <Repeater
-            label="Três primeiras automações"
-            hint="Máximo de 3 processos, com dor atual, tecnologia e ganho esperado."
-            max={3}
-            addLabel="Adicionar automação"
-            rows={rows("automacoes")}
-            onChange={set("automacoes")}
-            columns={[
-              { key: "processo", label: "Processo", placeholder: "Admissão de novos colaboradores" },
-              { key: "dor", label: "Dor atual", placeholder: "Conferência manual de documentos" },
-              { key: "tecnologia", label: "Tecnologia", options: TECH_OPTIONS },
-              { key: "ganho", label: "Ganho principal", options: GAIN_OPTIONS },
-              { key: "impacto", label: "Impacto estimado", placeholder: "-40% no tempo de ciclo" },
-            ]}
-          />
-          <LongText
-            label="Como você mediria o resultado"
-            hint="Indicadores de acompanhamento e forma de comprovar o ganho."
-            value={text("medicao")}
-            onChange={set("medicao")}
-          />
-        </div>
-      ) : null}
+          <div key={current.key} className="animate-in space-y-3 fade-in slide-in-from-bottom-2 duration-300">
+            {renderStep(current)}
+            <StepMeter value={data[current.key]} />
+          </div>
 
-      {sectionKey === "ia" ? (
-        <div className="space-y-6">
-          <LongText
-            label="Problema a ser resolvido"
-            value={text("problema")}
-            onChange={set("problema")}
-            hint="Qual dor de RH a IA Generativa endereçaria."
-          />
-          <LongText
-            label="Usuários e jornada"
-            value={text("usuarios")}
-            onChange={set("usuarios")}
-            hint="Quem usaria a solução e em que momento."
-          />
-          <LongText
-            label="Solução proposta"
-            value={text("solucao")}
-            onChange={set("solucao")}
-            hint="Funcionamento, fontes de conhecimento e integração com os sistemas atuais."
-          />
-          <BlockPicker
-            label="Arquitetura da solução"
-            hint="Selecione os blocos na ordem do fluxo."
-            options={ARCHITECTURE_BLOCKS}
-            value={(data["arquitetura"] as string[]) ?? []}
-            onChange={set("arquitetura")}
-          />
-          <LongText label="Riscos" value={text("riscos")} onChange={set("riscos")} hint="Riscos técnicos, éticos e de LGPD." />
-          <LongText
-            label="Mitigações"
-            value={text("mitigacoes")}
-            onChange={set("mitigacoes")}
-            hint="Controles, governança e supervisão humana."
-          />
-          <LongText
-            label="Indicadores de sucesso"
-            value={text("indicadores")}
-            onChange={set("indicadores")}
-            hint="Como você comprovaria o valor gerado."
-          />
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <span className="text-xs font-semibold tabular-nums text-muted-foreground">
+              Interação {stepIndex + 1} de {steps.length}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={stepIndex === 0}
+                onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
+              >
+                <ArrowLeft className="mr-1.5 size-4" />
+                Anterior
+              </Button>
+              {isLast ? (
+                <Button size="sm" onClick={onCompleteSection}>
+                  Concluir etapa
+                  <ArrowRight className="ml-1.5 size-4" />
+                </Button>
+              ) : (
+                <Button size="sm" onClick={() => setStepIndex((i) => Math.min(steps.length - 1, i + 1))}>
+                  Próxima
+                  <ArrowRight className="ml-1.5 size-4" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
-      ) : null}
-
-      {sectionKey === "roadmap" ? (
-        <div className="space-y-6">
-          <LongText
-            label="Onda 1 — primeiros 30 dias"
-            value={text("d30")}
-            onChange={set("d30")}
-            hint="Entregas, foco e quick wins."
-          />
-          <LongText label="Onda 2 — 60 dias" value={text("d60")} onChange={set("d60")} hint="Escala e consolidação." />
-          <LongText
-            label="Onda 3 — 90 dias"
-            value={text("d90")}
-            onChange={set("d90")}
-            hint="Resultados esperados e próximos passos."
-          />
-          <LongText
-            label="Riscos do plano e como comunicá-lo à diretoria"
-            value={text("comunicacao")}
-            onChange={set("comunicacao")}
-          />
-        </div>
-      ) : null}
+      )}
     </section>
   );
 }
+
 
 function ReviewPanel({
   responses,
